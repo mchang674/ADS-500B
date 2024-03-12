@@ -12,7 +12,7 @@ editor_options:
 library(dplyr)
 library(tidyverse)
 library(tidymodels)
-library(mosaic)
+library(mosaic) 
 library(cluster)  
 library(factoextra)
 library(lubridate)
@@ -22,14 +22,20 @@ library(lubridate)
 housing_sales<- read.csv("~/ADS/ADS 500B/Datasets/house_sales.csv") #reading in data
 ```
 
+## fixing the date column
+
 ```{r}
 housing_sales[2] <- housing_sales[2] %>%
   mutate(date = as.character(date)) %>%
   mutate(date = str_remove(date, "T000000")) %>%
   mutate(date = ymd(date))
+housing_sales <- housing_sales %>%
+  mutate(zipcode=as.factor(zipcode))
 
 str(housing_sales)
 ```
+
+## Looking at the state of the NAs
 
 ```{r}
 house_na<- housing_sales %>%
@@ -37,19 +43,117 @@ house_na<- housing_sales %>%
 ```
 
 ```{r}
-housing_clean<- housing_sales %>%
+# Count of rows with NAs
+sum(is.na(house_na[,4])) #bedrooms
+sum(is.na(house_na[,5])) #bathrooms
+sum(is.na(house_na[,6])) #sqft_living
+sum(is.na(house_na[,7])) #sqft_loft
+```
+
+# Data transformations we could explore
+
+Make price into price_100, where each increase of unit denotes an increase in $100,000 dollars.
+
+Turn waterfront, view, condition, and grade into ordered factors.
+
+
+
+
+
+# Cleaning the Data
+
+Removing all rows with NAs in them would result in losing 3995 rows being removed. This is 18.5% of the rows. There are a few variables that I think are nonnegotiable, and should have all rows with NAs removed. This list includes price.
+
+
+```{r}
+housing_clean<- housing_sales %>% #will be updated as we decide what to do with NAs
   filter(price != is.na(price))
 ```
 
-Choosing how to clean the NAs out kind of relies on what variables we want to focus on. From the data I've seen, I think we could do a supervised learning with an equation that looks like the following:
+
+```{r}
+#Price breakdown
+
+favstats(~price, data = housing_clean)
+
+ggplot(data = housing_clean) +
+  geom_histogram(aes(x = price))
+```
+
+Choosing how to clean the rest of the NAs out kind of relies on what variables we want to focus on. From the data I've seen, I think we could do a supervised learning with an equation that looks like the following:
 
 price = intercept + var1 + var2 + var3 + var4 + etc.
 
 I think I definitely want to include yr_built, zipcode, sqft_living, sqft_lot, bedrooms, and bathrooms in our exploratory data analysis. I would also suggest that we look at the condition, just to see how things line up.
 
-# Notes for Bedrooms (1134 NAs)
+I found the original dataset, which explains the sqft_living15 and sqft_lot15. The variable sqft_living15 is the square footage of interior housing living space for the nearest 15 neighbors. The variable sqft_lot15 is the square footage of the land lots of the nearest 15 neighbors. These were probably included as a sort of measure of wealth in the area.
+
+# ZIPCODE
+
+Is zipcode an important predictor of price? 
+
+```{r, Price by zipcode}
+housing_clean %>%
+  group_by(zipcode) %>%
+  summarise(mean = mean(price)) %>%
+  ggplot() +
+  geom_histogram((aes(x = mean))) +
+  labs(title = "Mean Price by Zipcode")
+
+housing_clean %>%
+  group_by(zipcode) %>%
+  summarise(mean = mean(price)) %>%
+  arrange(desc(mean))
+```
+
+```{r, Top 3 mean price zip codes}
+#Looking at the zipcodes with the top mean prices
+
+housing_clean %>%
+  filter(zipcode == "98039") %>%
+  arrange(desc(price))
+
+housing_clean %>%
+  filter(zipcode == "98004") %>%
+  arrange(desc(price))
+
+housing_clean %>%
+  filter(zipcode == "98040") %>%
+  arrange(desc(price))
+```
+
+What about square footage?
 
 ```{r}
+housing_clean %>%
+  group_by(zipcode) %>%
+  summarise(mean = mean(sqft_living15)) %>%
+  ggplot() +
+  geom_histogram((aes(x = mean))) +
+  labs(title = "Mean Interior Square Footage by Zipcode")
+
+housing_clean %>%
+  group_by(zipcode) %>%
+  summarise(mean = mean(sqft_living15)) %>%
+  arrange(desc(mean))
+```
+
+
+```{r}
+# Are sqft_living15 and sqft_living linearly related? Can one predict the other?
+ggplot(data = housing_clean) +
+  geom_point(aes(x = sqft_living15, y = sqft_living))
+
+# Are sqft_lot15 and sqft_lot linearly related? Can one predict the other?
+ggplot(data = housing_clean) +
+  geom_point(aes(x = sqft_lot15, y = sqft_lot))
+```
+
+
+## Notes for Bedrooms (1134 NAs)
+
+```{r}
+
 ggplot(data = housing_clean) +
   geom_boxplot(aes(y=bedrooms))
 ```
@@ -58,7 +162,7 @@ ggplot(data = housing_clean) +
 - replace with median due to skew? or just remove rows with NAs
 
 
-# Notes for Bathrooms (1068 NAs)
+## Notes for Bathrooms (1068 NAs)
 
 ```{r}
 ggplot(data = housing_clean) +
@@ -68,7 +172,7 @@ ggplot(data = housing_clean) +
 - replace with median due to skew? or just remove rows with NAs
 
 
-# Notes for Square Feet of Living Space (1110 NAs)
+## Notes for Square Feet of Living Space (1110 NAs)
 
 ```{r}
 ggplot(data = housing_clean) +
@@ -77,7 +181,7 @@ ggplot(data = housing_clean) +
 
 - Remove rows with NAs?
 
-# Notes for Square Feet of Lot Space (1044)
+## Notes for Square Feet of Lot Space (1044)
 
 ```{r}
 ggplot(data = housing_clean) +
@@ -85,22 +189,5 @@ ggplot(data = housing_clean) +
 ```
 
 - replace with median due to skew? or just remove rows with NAs
-- sqft lot > 1500000 -> nosiy?
+- sqft lot > 1500000 -> noisy?
 
-# Notes for Year Built
-
-```{r}
-ggplot(data = housing_clean) +
-  geom_bar(aes(x=yr_built))
-```
-
-- No NAs
-
-# Notes for Year Condition
-
-```{r}
-ggplot(data = housing_clean) +
-  geom_bar(aes(x=condition))
-```
-
-- No NAs
