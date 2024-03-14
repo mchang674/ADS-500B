@@ -22,7 +22,7 @@ library(lubridate)
 housing_sales<- read.csv("~/ADS/ADS 500B/Datasets/house_sales.csv") #reading in data
 ```
 
-## fixing the date column
+Fixing the date column
 
 ```{r}
 housing_sales[2] <- housing_sales[2] %>%
@@ -35,7 +35,7 @@ housing_sales <- housing_sales %>%
 str(housing_sales)
 ```
 
-## Looking at the state of the NAs
+Looking at the state of the NAs
 
 ```{r}
 house_na<- housing_sales %>%
@@ -50,7 +50,7 @@ sum(is.na(house_na[,6])) #sqft_living
 sum(is.na(house_na[,7])) #sqft_loft
 ```
 
-# Data transformations we could explore
+Data transformations we could explore
 
 Make price into price_100, where each increase of unit denotes an increase in $100,000 dollars.
 
@@ -60,7 +60,7 @@ Turn waterfront, view, condition, and grade into ordered factors.
 
 
 
-# Cleaning the Data
+Cleaning the Data
 
 Removing all rows with NAs in them would result in losing 3995 rows being removed. This is 18.5% of the rows. There are a few variables that I think are nonnegotiable, and should have all rows with NAs removed. This list includes price.
 
@@ -88,7 +88,7 @@ I think I definitely want to include yr_built, zipcode, sqft_living, sqft_lot, b
 
 I found the original dataset, which explains the sqft_living15 and sqft_lot15. The variable sqft_living15 is the square footage of interior housing living space for the nearest 15 neighbors. The variable sqft_lot15 is the square footage of the land lots of the nearest 15 neighbors. These were probably included as a sort of measure of wealth in the area.
 
-# ZIPCODE
+ZIPCODE
 
 Is zipcode an important predictor of price? 
 
