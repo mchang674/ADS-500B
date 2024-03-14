@@ -22,7 +22,7 @@ library(lubridate)
 housing_sales<- read.csv("~/ADS/ADS 500B/Datasets/house_sales.csv") #reading in data
 ```
 
-Fixing the date column
+Fixing the date column with lubridate
 
 ```{r}
 housing_sales[2] <- housing_sales[2] %>%
