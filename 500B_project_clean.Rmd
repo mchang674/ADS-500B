@@ -22,7 +22,7 @@ library(lubridate)
 housing_sales<- read.csv("~/ADS/ADS 500B/Datasets/house_sales.csv") #reading in data
 ```
 
-Fixing the date column with lubridate
+## Fixing the date column with lubridate
 
 ```{r}
 housing_sales[2] <- housing_sales[2] %>%
@@ -35,7 +35,7 @@ housing_sales <- housing_sales %>%
 str(housing_sales)
 ```
 
-Looking at the state of the NAs
+## Looking at the state of the NAs
 
 ```{r}
 house_na<- housing_sales %>%
@@ -43,33 +43,25 @@ house_na<- housing_sales %>%
 ```
 
 ```{r}
-# Count of rows with NAs
-sum(is.na(house_na[,4])) #bedrooms
-sum(is.na(house_na[,5])) #bathrooms
-sum(is.na(house_na[,6])) #sqft_living
-sum(is.na(house_na[,7])) #sqft_loft
+colSums(is.na(house_na))
 ```
 
-Data transformations we could explore
+## Data transformations we could explore
 
 Make price into price_100, where each increase of unit denotes an increase in $100,000 dollars.
 
 Turn waterfront, view, condition, and grade into ordered factors.
 
 
-
-
-
-Cleaning the Data
-
-Removing all rows with NAs in them would result in losing 3995 rows being removed. This is 18.5% of the rows. There are a few variables that I think are nonnegotiable, and should have all rows with NAs removed. This list includes price.
-
-
+# Clean Data (WIP)
 ```{r}
 housing_clean<- housing_sales %>% #will be updated as we decide what to do with NAs
   filter(price != is.na(price))
 ```
 
+# Cleaning the Data
+
+Removing all rows with NAs in them would result in losing 3995 rows being removed. This is 18.5% of the rows. There are a few variables that I think are nonnegotiable, and should have all rows with NAs removed. This list includes price.
 
 ```{r}
 #Price breakdown
@@ -88,7 +80,84 @@ I think I definitely want to include yr_built, zipcode, sqft_living, sqft_lot, b
 
 I found the original dataset, which explains the sqft_living15 and sqft_lot15. The variable sqft_living15 is the square footage of interior housing living space for the nearest 15 neighbors. The variable sqft_lot15 is the square footage of the land lots of the nearest 15 neighbors. These were probably included as a sort of measure of wealth in the area.
 
-ZIPCODE
+
+```{r}
+# Are sqft_living15 and sqft_living linearly related? Can one predict the other?
+ggplot(data = housing_clean) +
+  geom_point(aes(x = sqft_living15, y = sqft_living))
+
+# Are sqft_lot15 and sqft_lot linearly related? Can one predict the other?
+ggplot(data = housing_clean) +
+  geom_point(aes(x = sqft_lot15, y = sqft_lot))
+```
+
+
+## Notes for Bedrooms (1134 NAs)
+
+```{r}
+ggplot(data = housing_clean) +
+  geom_boxplot(aes(y=bedrooms))
+```
+
+- the row with 33 bedrooms should be smoothed (only sold for 640K)
+- replace with median due to skew? or just remove rows with NAs
+
+```{r}
+housing_clean[15871,4]<- 3 #smooths the house that had 33 bedrooms
+```
+
+## Notes for Bathrooms (1068 NAs)
+
+```{r}
+ggplot(data = housing_clean) +
+  geom_boxplot(aes(y=bathrooms))
+```
+
+- replace with median due to skew? or just remove rows with NAs
+
+
+## Notes for Square Feet of Living Space (1110 NAs)
+
+```{r}
+ggplot(data = housing_clean) +
+  geom_boxplot(aes(y=sqft_living))
+```
+
+- replace NA's with sqft_living15
+
+```{r}
+housing_clean <- housing_clean %>%
+  mutate(sqft_living = ifelse(is.na(sqft_living), sqft_living15, sqft_living))
+```
+
+
+## Notes for Square Feet of Lot Space (1044)
+
+```{r}
+ggplot(data = housing_clean) +
+  geom_boxplot(aes(y=sqft_lot))
+```
+- sqft lot > 1500000 -> noisy? only sold for $700,000 -> could replace with sqft_lot15
+
+```{r}
+housing_clean <- housing_clean %>%
+  mutate(sqft_lot = ifelse(is.na(sqft_lot), sqft_lot15, sqft_lot))
+```
+
+
+# All the Cleaning In One Place
+```{r}
+# housing_clean<- housing_sales %>% #will be updated as we decide what to do with NAs
+#   filter(price != is.na(price)) %>%
+#   mutate(sqft_living = ifelse(is.na(sqft_living), sqft_living15, sqft_living)) %>%
+#   mutate(sqft_lot = ifelse(is.na(sqft_lot), sqft_lot15, sqft_lot))
+
+# housing_clean[15871,4]<- 3 #smooths the house that had 33 bedrooms
+
+# colSums(is.na(housing_clean))
+```
+
+## ZIPCODE (thinking of removing)
 
 Is zipcode an important predictor of price? 
 
@@ -137,57 +206,4 @@ housing_clean %>%
   summarise(mean = mean(sqft_living15)) %>%
   arrange(desc(mean))
 ```
-
-
-```{r}
-# Are sqft_living15 and sqft_living linearly related? Can one predict the other?
-ggplot(data = housing_clean) +
-  geom_point(aes(x = sqft_living15, y = sqft_living))
-
-# Are sqft_lot15 and sqft_lot linearly related? Can one predict the other?
-ggplot(data = housing_clean) +
-  geom_point(aes(x = sqft_lot15, y = sqft_lot))
-```
-
-
-## Notes for Bedrooms (1134 NAs)
-
-```{r}
-
-ggplot(data = housing_clean) +
-  geom_boxplot(aes(y=bedrooms))
-```
-
-- the row with 33 bedrooms should be smoothed (only sold for 640K)
-- replace with median due to skew? or just remove rows with NAs
-
-
-## Notes for Bathrooms (1068 NAs)
-
-```{r}
-ggplot(data = housing_clean) +
-  geom_boxplot(aes(y=bathrooms))
-```
-
-- replace with median due to skew? or just remove rows with NAs
-
-
-## Notes for Square Feet of Living Space (1110 NAs)
-
-```{r}
-ggplot(data = housing_clean) +
-  geom_boxplot(aes(y=sqft_living))
-```
-
-- Remove rows with NAs?
-
-## Notes for Square Feet of Lot Space (1044)
-
-```{r}
-ggplot(data = housing_clean) +
-  geom_boxplot(aes(y=sqft_lot))
-```
-
-- replace with median due to skew? or just remove rows with NAs
-- sqft lot > 1500000 -> noisy?
 
