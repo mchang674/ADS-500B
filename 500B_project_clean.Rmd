@@ -157,6 +157,99 @@ housing_clean <- housing_clean %>%
 # colSums(is.na(housing_clean))
 ```
 
+
+# Bedrooms
+
+```{r}
+housing_clean<- housing_clean %>%
+  filter(id != 6306400140 & id != 1453602309 & id != 6896300380 & id != 2954400190 & id != 2569500210 & id != 2310060040 & id != 3374500520 & id != 7849202190 & id != 7849202299 & id != 9543000205 & id != 1222029077) #removes houses with zero bedrooms
+
+housing_clean %>%
+  arrange(bedrooms)
+
+housing_clean<- housing_clean %>%
+  mutate(bed_fact = as.factor(bedrooms),
+         bath_char = as.character(bathrooms),
+         bath_fact = fct_collapse(bath_char,
+    "0 to 1" = c("0", "0.5", "0.75"), 
+    "1.25 to 2" = c("1", "1.25", "1.5", "1.75", "2"), 
+    "2.25-3" = c("2.25", "2.5", "2.75", "3") ,
+    "3.25-4" = c("3.25", "3.5", "3.75", "4"),
+    "4.25-5" = c("4.25", "4.5", "4.75", "5"),
+    "5.25 and up" = c("5.25", "5.5", "5.75", "6", "6.25", "6.5", "6.75", "7.5", "7.75", "8")
+  )) 
+
+housing_clean %>%
+  group_by(bed_fact) %>%
+  summarise(min = min(sqft_living),
+            max = max(sqft_living),
+            median_sqft = median(sqft_living))
+
+housing_clean %>%
+  group_by(bed_fact) %>%
+  summarise(n = n())
+
+housing_clean<- housing_clean %>%
+  mutate(bedrooms = case_when(
+    is.na(bedrooms) & sqft_living < 1000 ~ 1,
+    is.na(bedrooms) & sqft_living < 1500 ~ 2,
+    is.na(bedrooms) & sqft_living < 2000 ~ 3,
+    is.na(bedrooms) & sqft_living < 2600 ~ 4,
+    is.na(bedrooms) & sqft_living < 2900 ~ 5,
+    is.na(bedrooms) & sqft_living <= 3000 ~ 6,
+    is.na(bedrooms) & sqft_living > 3000 ~ 7,
+    .default = bedrooms
+  ))
+colSums(is.na(bed))
+
+```
+
+```{r}
+housing_clean %>%
+  group_by(bath_fact) %>%
+  summarise(min = min(sqft_living),
+            max = max(sqft_living),
+            median_sqft = median(sqft_living))
+
+housing_clean %>%
+  group_by(bath_fact) %>%
+  summarise(n = n())
+
+housing_clean<- housing_clean %>%
+  mutate(bathrooms = case_when(
+    is.na(bathrooms) & sqft_living < 1000 ~ 1,
+    is.na(bathrooms) & sqft_living < 1500 ~ 2,
+    is.na(bathrooms) & sqft_living < 3000 ~ 3,
+    is.na(bathrooms) & sqft_living < 4000 ~ 4,
+    is.na(bathrooms) & sqft_living > 4000 ~ 5,
+    .default = bathrooms
+  ))
+colSums(is.na(housing_clean))
+
+housing_clean<- housing_clean %>%
+  select(1:21)
+```
+
+
+```{r}
+# housing_groups <- housing_clean %>%
+#  mutate(bed_group = fct_collapse(bed_fact,
+#    "one to three" = c("1", "2", "3"), # median sqft in the 1,000 - 2,000 range
+#    "four to six" = c("4", "5", "6"), # median sqft in the 2,000 to 3,000 range
+#    "seven to ten" = c("7", "8", "9", "10") # median sqft in the 3,000+ range
+#  ))
+
+# housing_groups %>%
+#  group_by(bed_group) %>%
+#  summarise(median = median(sqft_living))
+```
+
+
+
+
+
+
+
 ## ZIPCODE (thinking of removing)
 
 Is zipcode an important predictor of price? 
