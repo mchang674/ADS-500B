@@ -56,7 +56,11 @@ housing_clean <- housing_clean %>%
            is.na(bathrooms) & sqft_living >= 4000 ~ 5,
            .default = bathrooms
          ), #replaces NAs with approximations from the 500B_project_clean.RMD
-         zipcode=as.factor(zipcode)) %>% #makes zipcode a factor
+         zipcode=as.factor(zipcode), #makes zipcode a factor
+         condition_f = as.factor(condition),
+         waterfront_f = as.factor(waterfront),
+         view_f = as.factor(view),
+         grade_f = as.factor(grade)) %>% 
   filter(bedrooms != 0) #removes houses with zero bedrooms
 
 colSums(is.na(housing_clean))
