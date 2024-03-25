@@ -100,10 +100,16 @@ housing_test <- testing(housing_split)
 ```
 
 
-# Building models with training data 
+# Building Linear Regression models with training data- PREDICTING PRICE
+
 ```{r}
 model0<- lm(price ~ 1, data = housing_train)
 summary(model0)
+```
+
+```{r}
+model0_all<- lm(price ~ ., data = housing_train)
+summary(model6)
 ```
 
 ```{r}
@@ -131,3 +137,15 @@ model5<- lm(price ~ condition + waterfront + view + grade + sqft_living + bedroo
 summary(model5)
 ```
 
+```{r}
+model6<- lm(price ~ date + condition + waterfront + view + grade + sqft_living + sqft_lot + bedrooms + bathrooms + yr_built + sqft_above + sqft_basement, data = housing_train)
+summary(model6)
+```
+
+# Non-Linear regression models
+
+## Choices for non-lm() regressions
+  1. Regression tree
+  
+
+Interactive map?
