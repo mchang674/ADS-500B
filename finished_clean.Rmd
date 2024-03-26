@@ -36,8 +36,13 @@ housing_clean[2] <- housing_clean[2] %>%
 housing_clean[15871,4]<- 3
 
 housing_clean <- housing_clean %>%
-  mutate(sqft_living = ifelse(is.na(sqft_living), sqft_living15, sqft_living), #replaces NA living sqft with the mean of the nearest 15 neighbors' living sqft measurement
+  mutate(price_10000 = price / 10000,
+         sqft_living = ifelse(is.na(sqft_living), sqft_living15, sqft_living), #replaces NA living sqft with the mean of the nearest 15 neighbors' living sqft measurement
+         sqft_living100 = sqft_living / 100,
          sqft_lot = ifelse(is.na(sqft_lot), sqft_lot15, sqft_lot), #replaces NA lot sqft with the mean of the nearest 15 neighbors' lot sqft measurement
+         sqft_lot100 = sqft_lot / 100,
+         sqft_above100 = sqft_above / 100,
+         sqft_basement100 = sqft_basement / 100,
          bedrooms = case_when(
            is.na(bedrooms) & sqft_living < 1000 ~ 1,
            is.na(bedrooms) & sqft_living < 1500 ~ 2,
@@ -56,11 +61,12 @@ housing_clean <- housing_clean %>%
            is.na(bathrooms) & sqft_living >= 4000 ~ 5,
            .default = bathrooms
          ), #replaces NAs with approximations from the 500B_project_clean.RMD
-         zipcode=as.factor(zipcode), #makes zipcode a factor
+         zipcode=as.factor(zipcode),  #makes zipcode a factor
          condition_f = as.factor(condition),
          waterfront_f = as.factor(waterfront),
          view_f = as.factor(view),
-         grade_f = as.factor(grade)) %>% 
+         grade_f = as.factor(grade),
+         renovated = ifelse(yr_renovated != 0, 1, 0)) %>%
   filter(bedrooms != 0) #removes houses with zero bedrooms
 
 colSums(is.na(housing_clean))
