@@ -179,7 +179,14 @@ summary(model7)
 
 Adding interactions between bedrooms and bathrooms, along with sqft_living100 and sqft_lot100 has rendered sqft_lot100 not significant. It has increased the t-value of grade by 2.
 
-The $R^2$ value is not 0.6557, which means that 65.57% of the variability in this dataset can be explained by this model.
+The $R^2$ value is 0.6557, which means that 65.57% of the variability in this dataset can be explained by this model.
+
+```{r}
+model7a<- lm(price_10000 ~ date + floors + condition + waterfront + view + grade + sqft_living100 + bedrooms + bathrooms + yr_built + sqft_above100 + sqft_basement100 + bedrooms:bathrooms + sqft_living100:sqft_lot100, data = housing_train)
+summary(model7a)
+```
+
+Removing the insignificant term does not change the R-Squared.
 
 What if we removed the variables that are included in the interactions, and kept only the interactions?
 
@@ -212,15 +219,29 @@ model3                    0.518
 model4                    0.5258                 
 model5                    0.5968                 
 model6                    0.6483                 
-model7                    0.6557        
+model7                    0.6557
+model7a                   0.6557
 model8                    0.6421
 model9                    0.6544
+
+From these models, I will move forward with model7a, as it has the highest $R^2$ value, and less predictor variables than model7.
+
+# Applying the model to the data
+I'm going to basically take the model7a and apply it to the testing data using the function "augment". This will add some columns to the housing_test tibble, which provides the estimates based on model7a.
+
+```{r}
+fit_7a<- model7a %>%
+  augment(housing_test)
+
+fit_7a %>%
+  rmse(price, .fitted) %>%
+     pull(.estimate)
+```
 
 
 # Non-Linear regression models
 
 ## Choices for non-lm() regressions
   1. Regression tree
-  
 
-Interactive map?
+
