@@ -115,7 +115,7 @@ summary(model0)
 
 ```{r}
 model0_all<- lm(price ~ ., data = housing_train)
-summary(model6)
+summary(model0_all)
 ```
 
 ```{r}
@@ -161,7 +161,7 @@ Model 6: Top 5 Variables with highest absolute value of t-value
 
 Model 6 with transformed price, sqft_living, sqft_lot, sqft_above, and sqft_basement. This does NOT change any of the p-values, but it does make interpretation different.
 
-Each increase in one unit of price = an increase of $10,000
+Each increase in one unit of price_10000 = an increase of $10,000
 Each increase in one unit of sqft_blank100 = an increase of 100 sqft
 
 ```{r}
