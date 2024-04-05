@@ -234,7 +234,7 @@ fit_7a<- model7a %>%
   augment(housing_test)
 
 fit_7a %>%
-  rmse(price, .fitted) %>%
+  rmse(price_10000, .fitted) %>%
      pull(.estimate)
 ```
 
