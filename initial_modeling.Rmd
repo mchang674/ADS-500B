@@ -200,7 +200,7 @@ Doing this renders the bedrooms and bathrooms interaction insignificant. I would
 What if we kept the separate bedrooms and bathrooms terms, plus their interaction, but removed the interaction for sqft_living100 and sqft_lot100?
 
 ```{r}
-model9<- lm(price_10000 ~ date + bedrooms + bathrooms + floors + condition + waterfront + view + grade + yr_built + sqft_above100 + sqft_basement100 + bedrooms:bathrooms , data = housing_train)
+model9<- lm(price_10000 ~ date + bedrooms + bathrooms + floors + condition + waterfront + view + grade + yr_built + sqft_above100 + sqft_basement100 + sqft_living100 + sqft_lot100 + bedrooms:bathrooms , data = housing_train)
 summary(model9)
 ```
 
@@ -222,7 +222,7 @@ model6                    0.6483
 model7                    0.6557
 model7a                   0.6557
 model8                    0.6421
-model9                    0.6544
+model9                    0.6554
 
 From these models, I will move forward with model7a, as it has the highest $R^2$ value, and less predictor variables than model7.
 
@@ -234,6 +234,13 @@ fit_7a<- model7a %>%
   augment(housing_test)
 
 fit_7a %>%
+  rmse(price_10000, .fitted) %>%
+     pull(.estimate)
+
+fit_9<- model9 %>%
+  augment(housing_test)
+
+fit_9 %>%
   rmse(price_10000, .fitted) %>%
      pull(.estimate)
 ```
