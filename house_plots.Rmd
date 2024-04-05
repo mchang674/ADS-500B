@@ -76,15 +76,27 @@ colSums(is.na(housing_clean))
 
 ```{r}
 ggplot(data = housing_clean) +
-  geom_boxplot(aes(x = view_f, y=price))
+  geom_boxplot(aes(x = view_f, y=price_10000)) +
+  labs(title = "View Score versus Price in $10,000s") +
+  xlab("View Score") +
+  ylab("Price in the $10,000s")
 
 ggplot(data = housing_clean) +
-  geom_boxplot(aes(x = waterfront_f, y=price))
+  geom_boxplot(aes(x = waterfront_f, y=price_10000)) +
+  labs(title = "Waterfront Status versus Price in $10,000s") +
+  xlab("Waterfront Status") +
+  ylab("Price in the $10,000s")
 
 ggplot(data = housing_clean) +
-  geom_boxplot(aes(x = condition_f, y=price))
+  geom_boxplot(aes(x = condition_f, y=price_10000)) +
+  labs(title = "House Condition versus Price in $10,000s") +
+  xlab("House Condition") +
+  ylab("Price in the $10,000s")
 
 ggplot(data = housing_clean) +
-  geom_boxplot(aes(x = grade_f, y=price))
+  geom_boxplot(aes(x = grade_f, y=price_10000)) +
+  labs(title = "House Grade versus Price in $10,000s") +
+  xlab("House Grade") +
+  ylab("Price in the $10,000s")
 ```
 
