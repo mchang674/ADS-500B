@@ -1,0 +1,90 @@
+---
+title: "ADS 500B Project: Plots"
+author: "Madeline Chang"
+date: "2024-03-01"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(tidyverse) 
+library(tidymodels)
+library(mosaic) 
+library(cluster)  
+library(factoextra)
+library(lubridate)
+```
+
+```{r}
+housing_sales<- read.csv("~/ADS/ADS 500B/Datasets/house_sales.csv") #reading in data
+```
+
+```{r}
+housing_clean<- housing_sales %>% #will be updated as we decide what to do with NAs
+  filter(price != is.na(price))
+
+housing_clean[2] <- housing_clean[2] %>% 
+  mutate(date = as.character(date)) %>%
+  mutate(date = str_remove(date, "T000000")) %>%
+  mutate(date = ymd(date)) #fixing the date with lubridate
+```
+
+```{r}
+housing_clean[15871,4]<- 3
+
+housing_clean <- housing_clean %>%
+  mutate(price_10000 = price / 10000,
+         sqft_living = ifelse(is.na(sqft_living), sqft_living15, sqft_living), #replaces NA living sqft with the mean of the nearest 15 neighbors' living sqft measurement
+         sqft_living100 = sqft_living / 100,
+         sqft_lot = ifelse(is.na(sqft_lot), sqft_lot15, sqft_lot), #replaces NA lot sqft with the mean of the nearest 15 neighbors' lot sqft measurement
+         sqft_lot100 = sqft_lot / 100,
+         sqft_above100 = sqft_above / 100,
+         sqft_basement100 = sqft_basement / 100,
+         bedrooms = case_when(
+           is.na(bedrooms) & sqft_living < 1000 ~ 1,
+           is.na(bedrooms) & sqft_living < 1500 ~ 2,
+           is.na(bedrooms) & sqft_living < 2000 ~ 3,
+           is.na(bedrooms) & sqft_living < 2600 ~ 4,
+           is.na(bedrooms) & sqft_living < 2900 ~ 5,
+           is.na(bedrooms) & sqft_living <= 3000 ~ 6,
+           is.na(bedrooms) & sqft_living > 3000 ~ 7,
+           .default = bedrooms
+         ), #replaces NAs with approximations from the 500B_project_clean.RMD
+         bathrooms = case_when(
+           is.na(bathrooms) & sqft_living < 1000 ~ 1,
+           is.na(bathrooms) & sqft_living < 1500 ~ 2,
+           is.na(bathrooms) & sqft_living < 3000 ~ 3,
+           is.na(bathrooms) & sqft_living < 4000 ~ 4,
+           is.na(bathrooms) & sqft_living >= 4000 ~ 5,
+           .default = bathrooms
+         ), #replaces NAs with approximations from the 500B_project_clean.RMD
+         zipcode=as.factor(zipcode),  #makes zipcode a factor
+         condition_f = as.factor(condition),
+         waterfront_f = as.factor(waterfront),
+         view_f = as.factor(view),
+         grade_f = as.factor(grade),
+         renovated = ifelse(yr_renovated != 0, 1, 0),
+         renovated = as.factor(renovated)) %>%
+  filter(bedrooms != 0) #removes houses with zero bedrooms
+
+colSums(is.na(housing_clean))
+```
+
+
+```{r}
+ggplot(data = housing_clean) +
+  geom_boxplot(aes(x = view_f, y=price))
+
+ggplot(data = housing_clean) +
+  geom_boxplot(aes(x = waterfront_f, y=price))
+
+ggplot(data = housing_clean) +
+  geom_boxplot(aes(x = condition_f, y=price))
+
+ggplot(data = housing_clean) +
+  geom_boxplot(aes(x = grade_f, y=price))
+```
+
